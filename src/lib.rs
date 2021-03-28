@@ -1,3 +1,18 @@
+//! Partition a list of integers into two equal-sum sublists.
+//!
+//! # Example
+//!
+//! ```
+//! use equibipartite::get_equi_partition;
+//!
+//! let collection = vec![1, 4, 7, 35, 2, 1, 18, 6];
+//! let partition = get_equi_partition(&collection);
+//! println!("{:#?}", partition);   
+//!
+//! let collection = vec![1, 2, 3, 4, 5, 6];
+//! assert!(get_equi_partition(&collection).is_none());
+//! ```
+
 use std::collections::HashMap;
 use std::ops::SubAssign;
 
@@ -12,7 +27,7 @@ struct OccurrenceCount {
 }
 
 impl OccurrenceCount {
-    pub fn from_vec(set: &Vec<i64>) -> Self {
+    pub fn from_vec(set: &[i64]) -> Self {
         let mut counts = HashMap::new();
 
         for v in set {
@@ -20,7 +35,7 @@ impl OccurrenceCount {
             *count += 1;
         }
 
-        return Self { counts };
+        Self { counts }
     }
 
     pub fn to_vec(&self) -> Vec<i64> {
@@ -45,7 +60,7 @@ impl SubAssign for OccurrenceCount {
 }
 
 impl Partition {
-    pub fn from_subset(collection: &Vec<i64>, subset: &Vec<i64>) -> Self {
+    pub fn from_subset(collection: &[i64], subset: &[i64]) -> Self {
         let mut collection_counts = OccurrenceCount::from_vec(collection);
         let subset_counts = OccurrenceCount::from_vec(subset);
 
@@ -110,12 +125,24 @@ fn get_subset_with_sum(
     }
 }
 
-pub fn get_equi_partition(collection: &Vec<i64>) -> Option<Partition> {
+/// ## Example
+///
+/// ```
+/// use equibipartite::get_equi_partition;
+///
+/// let collection = vec![1, 4, 7, 35, 2, 1, 18, 6];
+/// let partition = get_equi_partition(&collection);
+/// println!("{:#?}", partition);   
+///
+/// let collection = vec![1, 2, 3, 4, 5, 6];
+/// assert!(get_equi_partition(&collection).is_none());
+/// ```
+pub fn get_equi_partition(collection: &[i64]) -> Option<Partition> {
     if collection.is_empty() {
         return None;
     }
-    let mut collection = collection.clone();
-    collection.sort();
+    let mut collection = collection.to_owned();
+    collection.sort_unstable();
     collection.reverse();
     let sum: i64 = collection.iter().sum();
     if sum % 2 == 1 {
@@ -177,8 +204,8 @@ mod tests {
                 partition.left, partition.right
             );
             let mut union = [&partition.left[..], &partition.right[..]].concat();
-            union.sort();
-            test_case.sort();
+            union.sort_unstable();
+            test_case.sort_unstable();
             assert_eq!(
                 union, test_case,
                 "{:#?} is an invalid partition of {:#?}",
